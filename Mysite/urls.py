@@ -23,4 +23,7 @@ urlpatterns = [
     path('', mainpage),
     #path('lc/', index),
     #path('', mainpage),
+    #path('', mainpage),
+
+
 ]
