@@ -22,4 +22,7 @@ urlpatterns = [
     path('lc/', include('lc.urls')),
     #path('lc/', index),
     #path('', mainpage),
+    #path('', mainpage),
+
+
 ]
