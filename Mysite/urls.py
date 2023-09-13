@@ -20,6 +20,7 @@ from lc.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('lc/', include('lc.urls')),
+    path('', mainpage),
     #path('lc/', index),
     #path('', mainpage),
 ]
