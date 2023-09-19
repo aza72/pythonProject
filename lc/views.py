@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+from .models import *
 # Create your views here.
+
+menu =[{'title': 'О сайте'},
+       'Добавить статью','Обратная связь','Войти']
 def index (request):
-    return render(request,'index.html',{'title':'Главная страница'})
+    posts= users.objects.all()
+    return render(request, 'lc/index.html', {'posts':posts,'menu':menu, 'title': 'Главная страница'})
 
 def about (request):
-    return render(request,'lc/about.html',{'title':'Страница о нас'})
+    return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
 
 def mainpage (request):
     return HttpResponse('<H1>Глав </h1> ')
