@@ -3,14 +3,40 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404
 from .models import *
 # Create your views here.
 
-menu =[{'title': 'О сайте'},
-       'Добавить статью','Обратная связь','Войти']
+menu =[{'title': 'О сайте', 'url_name': 'about'},
+       {'title':'Добавить статью','url_name': 'add_page'},
+       {'title':'Обратная связь', 'url_name': 'contact'},
+       {'title':'Войти','url_name': 'login'}
+       ]
 def index (request):
     posts= users.objects.all()
-    return render(request, 'lc/index.html', {'posts':posts,'menu':menu, 'title': 'Главная страница'})
+    index_param={'posts':posts,
+                 'menu':menu,
+                 'title': 'Главная страница'
+                 }
+    return render(request, 'lc/index.html', context=index_param )
 
 def about (request):
     return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
+
+def add_page (request):
+    addpage_param = {'menu': menu,
+                     'title': 'Добавить статью'
+                    }
+    return render(request, 'lc/addpage.html', context=addpage_param )
+def contact (request):
+    contact_param = {'menu': menu,
+                     'title': 'Контакты'
+                    }
+    return render(request, 'lc/contact.html', context=contact_param )
+def login (request):
+    login_param = {'menu': menu,
+                   'title': 'Регистрация'
+                  }
+    return render(request,'lc/login.html', context=login_param )
+
+
+
 
 def mainpage (request):
     return HttpResponse('<H1>Глав </h1> ')
