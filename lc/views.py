@@ -35,6 +35,21 @@ def login (request):
                   }
     return render(request,'lc/login.html', context=login_param )
 
+def showpost (request, postid):
+    posts = users.objects.filter(pk=postid)
+    for p in posts:
+        post = p.title
+        content = p.content
+
+    showpost_param = {'menu': menu,
+                      'posts': posts,
+                      'number': postid,
+                      'title': post,
+                      'content':content
+                     }
+    return render(request,'lc/showpost.html',context=showpost_param)
+
+
 
 
 
