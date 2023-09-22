@@ -10,9 +10,12 @@ menu =[{'title': 'О сайте', 'url_name': 'about'},
        ]
 def index (request):
     posts= users.objects.all()
+    cats = Category.objects.all()
     index_param={'posts':posts,
                  'menu':menu,
-                 'title': 'Главная страница'
+                 'title': 'Главная страница',
+                 'cats':cats,
+                 'cat_selected':0
                  }
     return render(request, 'lc/index.html', context=index_param )
 
@@ -49,7 +52,24 @@ def showpost (request, postid):
                      }
     return render(request,'lc/showpost.html',context=showpost_param)
 
+def showcat (request, catid):
+    posts= users.objects.filter(cat_id=catid)
+    cats= Category.objects.all()
 
+    if len(posts)>0:
+        title=Category.objects.get(pk=catid)
+    else:
+        title=''
+
+    if len(posts)==0:
+        raise Http404
+    showcat_param = {'posts':posts,
+                     'menu':menu,
+                     'title': title ,
+                     'cats':cats,
+                     'cat_selected':catid
+                    }
+    return render(request,'lc/index.html',context=showcat_param)
 
 
 
