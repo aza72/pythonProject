@@ -9,7 +9,7 @@ menu =[{'title': 'О сайте', 'url_name': 'about'},
        {'title':'Войти','url_name': 'login'}
        ]
 def index (request):
-    posts= users.objects.all()
+    posts= users.objects.filter(is_published=True)
     cats = Category.objects.all()
     index_param={'posts':posts,
                  'menu':menu,
@@ -53,7 +53,7 @@ def showpost (request, postid):
     return render(request,'lc/showpost.html',context=showpost_param)
 
 def showcat (request, catid):
-    posts= users.objects.filter(cat_id=catid)
+    posts= users.objects.filter(cat_id=catid, is_published=True)
     cats= Category.objects.all()
 
     if len(posts)>0:
