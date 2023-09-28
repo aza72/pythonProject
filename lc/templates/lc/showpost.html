@@ -3,6 +3,9 @@
 {% block content %}
 <h1>{{ title }}</h1>
 
-<h1>{{ number }}</h1>
+{% if posts.photo %}
+<p><img class="img-article-left" src="{{posts.photo.url}}">   </p>
+{% endif %}
+
 <p>{{ content|linebreaks }}</p>
 {% endblock %}

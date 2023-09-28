@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from .models import *
 # Create your views here.
@@ -38,26 +38,26 @@ def login (request):
                   }
     return render(request,'lc/login.html', context=login_param )
 
-def showpost (request, postid):
-    posts = users.objects.filter(pk=postid)
-    for p in posts:
-        post = p.title
-        content = p.content
+def showpost (request, postslug):
+    posts = get_object_or_404(users,slug=postslug)
+
 
     showpost_param = {'menu': menu,
                       'posts': posts,
-                      'number': postid,
-                      'title': post,
-                      'content':content
+
+                      'title': posts.title,
+                      'content':posts.content,
+                      'cat_selected':posts.cat_id
                      }
     return render(request,'lc/showpost.html',context=showpost_param)
 
-def showcat (request, catid):
-    posts= users.objects.filter(cat_id=catid, is_published=True)
+def showcat (request, catslug):
+    posts= users.objects.filter(cat_id__slug=catslug, is_published=True)
 
 
-    if len(posts)>0:
-        title=Category.objects.get(pk=catid)
+    #if len(posts)>0:
+        categ = Category.objects.filter(posts.cat)
+        title=categ
     else:
         title=''
 
@@ -65,9 +65,9 @@ def showcat (request, catid):
         raise Http404
     showcat_param = {'posts':posts,
                      'menu':menu,
-                     'title': title ,
+                     #'title': title,
+                     'cat_selected':posts.id
 
-                     'cat_selected':catid
                     }
     return render(request,'lc/index.html',context=showcat_param)
 

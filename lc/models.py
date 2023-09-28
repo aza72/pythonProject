@@ -3,12 +3,13 @@ from django.urls import reverse
 # Create your models here.
 class users(models.Model):
     title=models.CharField(max_length=255,verbose_name='Заголовок')
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
     content=models.TextField(blank=True)
     photo=models.ImageField(upload_to="uploads/%Y/%m/%d/", verbose_name='Фото')
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update= models.DateTimeField(auto_now=True)
     is_published= models.BooleanField(default=True)
-    cat = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, verbose_name='Категория')
+    cat = models.ForeignKey('Category', on_delete=models.PROTECT,  verbose_name='Категория')
 
     class Meta:
         verbose_name='Известные женщины'
@@ -18,10 +19,11 @@ class users(models.Model):
         return self.title
 
     def get_absolute_url (self):
-        return reverse('showpost', kwargs={'postid':self.pk})
+        return reverse('showpost', kwargs={'postslug':self.slug})
 
 class Category(models.Model):
     name = models.CharField(max_length=100, db_index=True,verbose_name='Категория')
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
     class Meta:
         verbose_name='Категория'
         verbose_name_plural='Категории'
@@ -31,4 +33,4 @@ class Category(models.Model):
         return self.name
 
     def get_absolute_url (self):
-        return reverse('showcat', kwargs={'catid':self.pk})
+        return reverse('showcat', kwargs={'catslug':self.slug})
