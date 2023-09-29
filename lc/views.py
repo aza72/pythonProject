@@ -53,22 +53,17 @@ def showpost (request, postslug):
 
 def showcat (request, catslug):
     posts= users.objects.filter(slug=catslug, is_published=True)
+    cat = Category.objects.filter(slug=catslug)
 
+    for p in cat:
+        title=p.name
+        id=p.id
 
-    #if len(posts)>0:
-        categ = Category.objects.filter(posts.cat)
-        title=categ
-    else:
-        title=''
-
-    if len(posts)==0:
-        raise Http404
     showcat_param = {'posts':posts,
                      'menu':menu,
-                     #'title': title,
-                     'cat_selected':posts.id
-
-                    }
+                     'title':title,
+                     'cat_selected':id
+                     }
     return render(request,'lc/index.html',context=showcat_param)
 
 
