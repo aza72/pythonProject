@@ -52,7 +52,7 @@ def showpost (request, postslug):
     return render(request,'lc/showpost.html',context=showpost_param)
 
 def showcat (request, catslug):
-    posts= users.objects.filter(cat_id__slug=catslug, is_published=True)
+    posts= users.objects.filter(slug=catslug, is_published=True)
 
 
     #if len(posts)>0:
