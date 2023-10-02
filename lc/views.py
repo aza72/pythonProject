@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+
+from .forms import *
 from .models import *
 # Create your views here.
 
@@ -23,8 +25,15 @@ def about (request):
     return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
 
 def add_page (request):
+    if request.method == 'POST':
+        form = AddPostForm(request.POST)
+        if form.is_valid():
+            print(form.cleaned_data)
+    else:
+        form = AddPostForm
     addpage_param = {'menu': menu,
-                     'title': 'Добавить статью'
+                     'title': 'Добавить статью',
+                     'form':form
                     }
     return render(request, 'lc/addpage.html', context=addpage_param )
 def contact (request):
