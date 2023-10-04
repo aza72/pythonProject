@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
-
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView
 from .forms import *
 from .models import *
 # Create your views here.
@@ -10,35 +11,64 @@ menu =[{'title': 'О сайте', 'url_name': 'about'},
        {'title':'Обратная связь', 'url_name': 'contact'},
        {'title':'Войти','url_name': 'login'}
        ]
-def index (request):
-    posts= users.objects.filter(is_published=True)
 
-    index_param={'posts':posts,
-                 'menu':menu,
-                 'title': 'Главная страница',
+class lcHome(ListView):
+    model = users
+    template_name = 'lc/index.html'
+    context_object_name = 'posts'
+    # extra_context = {'title':'Главная страница'}
 
-                 'cat_selected':0
-                 }
-    return render(request, 'lc/index.html', context=index_param )
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] = 'Главная страница'
+        context['cat_selected'] = 0
+        return context
+
+    def get_queryset(self):
+        return users.objects.filter(is_published=True)
+
+
+# def index (request):
+#     posts= users.objects.filter(is_published=True)
+#
+#     index_param={'posts':posts,
+#                  'menu':menu,
+#                  'title': 'Главная страница',
+#
+#                  'cat_selected':0
+#                  }
+#     return render(request, 'lc/index.html', context=index_param )
 
 def about (request):
     return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
 
-def add_page (request):
-    if request.method == 'POST':
-        form = AddPostForm(request.POST, request.FILES)
-        if form.is_valid():
+class add_page(CreateView):
+    form_class = AddPostForm
+    template_name = 'lc/addpage.html'
+    success_url = reverse_lazy('home')
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] = 'Добавление статьи'
+        #context['cat_selected'] = 0
+        return context
 
-                form.save()
-                return redirect('home')
-
-    else:
-        form = AddPostForm
-    addpage_param = {'menu': menu,
-                     'title': 'Добавить статью',
-                     'form':form
-                    }
-    return render(request, 'lc/addpage.html', context=addpage_param )
+# def add_page (request):
+#     if request.method == 'POST':
+#         form = AddPostForm(request.POST, request.FILES)
+#         if form.is_valid():
+#
+#                 form.save()
+#                 return redirect('home')
+#
+#     else:
+#         form = AddPostForm
+#     addpage_param = {'menu': menu,
+#                      'title': 'Добавить статью',
+#                      'form':form
+#                     }
+#     return render(request, 'lc/addpage.html', context=addpage_param )
 def contact (request):
     contact_param = {'menu': menu,
                      'title': 'Контакты'
@@ -50,33 +80,64 @@ def login (request):
                   }
     return render(request,'lc/login.html', context=login_param )
 
-def showpost (request, postslug):
-    posts = get_object_or_404(users,slug=postslug)
+class showpost(DetailView):
+    model = users
+    template_name = 'lc/showpost.html'
+    slug_url_kwarg = 'postslug'
+    context_object_name = 'posts'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] = context['posts']
+        #context['cat_selected'] = 0
+        return context
 
 
-    showpost_param = {'menu': menu,
-                      'posts': posts,
+# def showpost (request, postslug):
+#     posts = get_object_or_404(users,slug=postslug)
+#
+#
+#     showpost_param = {'menu': menu,
+#                       'posts': posts,
+#
+#                       'title': posts.title,
+#                       'content':posts.content,
+#                       'cat_selected':posts.cat_id
+#                      }
+#     return render(request,'lc/showpost.html',context=showpost_param)
 
-                      'title': posts.title,
-                      'content':posts.content,
-                      'cat_selected':posts.cat_id
-                     }
-    return render(request,'lc/showpost.html',context=showpost_param)
 
-def showcat (request, catslug):
+class lcCategory(ListView):
+    model = users
+    template_name = 'lc/index.html'
+    context_object_name = 'posts'
+    allow_empty = False
 
-    cat = Category.objects.filter(slug=catslug)
-    posts = users.objects.filter(cat_id=cat[0].id, is_published=True)
-    for p in cat:
-        title=p.name
-        id=p.id
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] ='Категория - '+ str(context['posts'][0].cat)
+        context['cat_selected'] = context['posts'][0].cat_id
+        return context
 
-    showcat_param = {'posts':posts,
-                     'menu':menu,
-                     'title':title,
-                     'cat_selected':id
-                     }
-    return render(request,'lc/index.html',context=showcat_param)
+    def get_queryset(self):
+        return users.objects.filter(cat__slug=self.kwargs['catslug'], is_published=True)
+
+# def showcat (request, catslug):
+#
+#     cat = Category.objects.filter(slug=catslug)
+#     posts = users.objects.filter(cat_id=cat[0].id, is_published=True)
+#     for p in cat:
+#         title=p.name
+#         id=p.id
+#
+#     showcat_param = {'posts':posts,
+#                      'menu':menu,
+#                      'title':title,
+#                      'cat_selected':id
+#                      }
+#     return render(request,'lc/index.html',context=showcat_param)
 
 
 
