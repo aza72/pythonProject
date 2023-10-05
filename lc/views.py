@@ -4,15 +4,12 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
 from .forms import *
 from .models import *
+from .utils import *
 # Create your views here.
 
-menu =[{'title': 'О сайте', 'url_name': 'about'},
-       {'title':'Добавить статью','url_name': 'add_page'},
-       {'title':'Обратная связь', 'url_name': 'contact'},
-       {'title':'Войти','url_name': 'login'}
-       ]
 
-class lcHome(ListView):
+
+class lcHome(DataMixin, ListView):
     model = users
     template_name = 'lc/index.html'
     context_object_name = 'posts'
@@ -20,10 +17,8 @@ class lcHome(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Главная страница'
-        context['cat_selected'] = 0
-        return context
+        c_def=self.get_user_context(title='Главная страница')
+        return context | c_def
 
     def get_queryset(self):
         return users.objects.filter(is_published=True)
