@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *
 from .models import *
 from .utils import *
@@ -38,16 +39,17 @@ class lcHome(DataMixin, ListView):
 def about (request):
     return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
 
-class add_page(CreateView):
+class add_page(LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'lc/addpage.html'
     success_url = reverse_lazy('home')
+    login_url = reverse_lazy('home')
+    raise_exception = True
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Добавление статьи'
-        #context['cat_selected'] = 0
-        return context
+        c_def = self.get_user_context(title='Добавление статьи')
+
+        return context | c_def
 
 # def add_page (request):
 #     if request.method == 'POST':
@@ -75,7 +77,7 @@ def login (request):
                   }
     return render(request,'lc/login.html', context=login_param )
 
-class showpost(DetailView):
+class showpost(DataMixin, DetailView):
     model = users
     template_name = 'lc/showpost.html'
     slug_url_kwarg = 'postslug'
@@ -83,10 +85,9 @@ class showpost(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = context['posts']
-        #context['cat_selected'] = 0
-        return context
+        c_def = self.get_user_context(title=['Posts'])
+
+        return context | c_def
 
 
 # def showpost (request, postslug):
@@ -103,7 +104,7 @@ class showpost(DetailView):
 #     return render(request,'lc/showpost.html',context=showpost_param)
 
 
-class lcCategory(ListView):
+class lcCategory(DataMixin, ListView):
     model = users
     template_name = 'lc/index.html'
     context_object_name = 'posts'
@@ -111,10 +112,9 @@ class lcCategory(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] ='Категория - '+ str(context['posts'][0].cat)
-        context['cat_selected'] = context['posts'][0].cat_id
-        return context
+        c_def = self.get_user_context(title='Категория - '+ str(context['posts'][0].cat),
+                                      cat_selected=context['posts'][0].cat_id)
+        return context | c_def
 
     def get_queryset(self):
         return users.objects.filter(cat__slug=self.kwargs['catslug'], is_published=True)
