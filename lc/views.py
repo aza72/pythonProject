@@ -1,4 +1,5 @@
 
+from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
@@ -79,11 +80,11 @@ def contact (request):
                      'title': 'Контакты'
                     }
     return render(request, 'lc/contact.html', context=contact_param )
-def login (request):
+def success (request):
     login_param = {'menu': menu,
                    'title': 'Регистрация'
                   }
-    return render(request,'lc/login.html', context=login_param )
+    return render(request, 'lc/success.html', context=login_param)
 
 class showpost(DataMixin, DetailView):
     model = users
@@ -146,16 +147,35 @@ class lcCategory(DataMixin, ListView):
 
 
 
+
 class RegisterUser(DataMixin,CreateView):
 
     form_class = RegisterUserForm
     template_name = 'lc/register.html'
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('success')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title='Регистрация')
+
         return context | c_def
+
+
+
+
+class LoginUser(DataMixin,LoginView):
+    form_class = LoginUserForm
+    template_name = 'lc/login.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Регистрация')
+
+        return context | c_def
+
+    def get_success_url(self):
+        return reverse_lazy('home')
+
 
 def mainpage (request):
     return HttpResponse('<H1>Глав </h1> ')
