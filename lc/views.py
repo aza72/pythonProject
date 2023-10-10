@@ -1,76 +1,180 @@
+
+from django.contrib.auth.views import LoginView
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import *
 from .models import *
+from .utils import *
 # Create your views here.
 
-menu =[{'title': 'О сайте', 'url_name': 'about'},
-       {'title':'Добавить статью','url_name': 'add_page'},
-       {'title':'Обратная связь', 'url_name': 'contact'},
-       {'title':'Войти','url_name': 'login'}
-       ]
-def index (request):
-    posts= users.objects.filter(is_published=True)
 
-    index_param={'posts':posts,
-                 'menu':menu,
-                 'title': 'Главная страница',
 
-                 'cat_selected':0
-                 }
-    return render(request, 'lc/index.html', context=index_param )
+class lcHome(DataMixin, ListView):
+
+    model = users
+    template_name = 'lc/index.html'
+    context_object_name = 'posts'
+    # extra_context = {'title':'Главная страница'}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def=self.get_user_context(title='Главная страница')
+        return context | c_def
+
+    def get_queryset(self):
+        return users.objects.filter(is_published=True)
+
+
+# def index (request):
+#     posts= users.objects.filter(is_published=True)
+#
+#     index_param={'posts':posts,
+#                  'menu':menu,
+#                  'title': 'Главная страница',
+#
+#                  'cat_selected':0
+#                  }
+#     return render(request, 'lc/index.html', context=index_param )
 
 def about (request):
-    return render(request,'lc/about.html',{'menu':menu,'title':'Страница о нас'})
+    contact_list = users.objects.all()
+    paginator = Paginator(contact_list, 3)  # Show 25 contacts per page.
 
-def add_page (request):
-    addpage_param = {'menu': menu,
-                     'title': 'Добавить статью'
-                    }
-    return render(request, 'lc/addpage.html', context=addpage_param )
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request,'lc/about.html',{'page_obj':page_obj,'menu':menu,'title':'Страница о нас'})
+
+class add_page(LoginRequiredMixin, DataMixin, CreateView):
+    form_class = AddPostForm
+    template_name = 'lc/addpage.html'
+    success_url = reverse_lazy('home')
+    login_url = reverse_lazy('home')
+    raise_exception = True
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Добавление статьи')
+
+        return context | c_def
+
+# def add_page (request):
+#     if request.method == 'POST':
+#         form = AddPostForm(request.POST, request.FILES)
+#         if form.is_valid():
+#
+#                 form.save()
+#                 return redirect('home')
+#
+#     else:
+#         form = AddPostForm
+#     addpage_param = {'menu': menu,
+#                      'title': 'Добавить статью',
+#                      'form':form
+#                     }
+#     return render(request, 'lc/addpage.html', context=addpage_param )
 def contact (request):
     contact_param = {'menu': menu,
                      'title': 'Контакты'
                     }
     return render(request, 'lc/contact.html', context=contact_param )
-def login (request):
+def success (request):
     login_param = {'menu': menu,
                    'title': 'Регистрация'
                   }
-    return render(request,'lc/login.html', context=login_param )
+    return render(request, 'lc/success.html', context=login_param)
 
-def showpost (request, postslug):
-    posts = get_object_or_404(users,slug=postslug)
+class showpost(DataMixin, DetailView):
+    model = users
+    template_name = 'lc/showpost.html'
+    slug_url_kwarg = 'postslug'
+    context_object_name = 'posts'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title=['Posts'])
 
-    showpost_param = {'menu': menu,
-                      'posts': posts,
-
-                      'title': posts.title,
-                      'content':posts.content,
-                      'cat_selected':posts.cat_id
-                     }
-    return render(request,'lc/showpost.html',context=showpost_param)
-
-def showcat (request, catslug):
-    posts= users.objects.filter(cat_id__slug=catslug, is_published=True)
+        return context | c_def
 
 
-    #if len(posts)>0:
-        categ = Category.objects.filter(posts.cat)
-        title=categ
-    else:
-        title=''
+# def showpost (request, postslug):
+#     posts = get_object_or_404(users,slug=postslug)
+#
+#
+#     showpost_param = {'menu': menu,
+#                       'posts': posts,
+#
+#                       'title': posts.title,
+#                       'content':posts.content,
+#                       'cat_selected':posts.cat_id
+#                      }
+#     return render(request,'lc/showpost.html',context=showpost_param)
 
-    if len(posts)==0:
-        raise Http404
-    showcat_param = {'posts':posts,
-                     'menu':menu,
-                     #'title': title,
-                     'cat_selected':posts.id
 
-                    }
-    return render(request,'lc/index.html',context=showcat_param)
+class lcCategory(DataMixin, ListView):
 
+    model = users
+    template_name = 'lc/index.html'
+    context_object_name = 'posts'
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Категория - '+ str(context['posts'][0].cat),
+                                      cat_selected=context['posts'][0].cat_id)
+        return context | c_def
+
+    def get_queryset(self):
+        return users.objects.filter(cat__slug=self.kwargs['catslug'], is_published=True)
+
+# def showcat (request, catslug):
+#
+#     cat = Category.objects.filter(slug=catslug)
+#     posts = users.objects.filter(cat_id=cat[0].id, is_published=True)
+#     for p in cat:
+#         title=p.name
+#         id=p.id
+#
+#     showcat_param = {'posts':posts,
+#                      'menu':menu,
+#                      'title':title,
+#                      'cat_selected':id
+#                      }
+#     return render(request,'lc/index.html',context=showcat_param)
+
+
+
+
+
+class RegisterUser(DataMixin,CreateView):
+
+    form_class = RegisterUserForm
+    template_name = 'lc/register.html'
+    success_url = reverse_lazy('success')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Регистрация')
+
+        return context | c_def
+
+
+
+
+class LoginUser(DataMixin,LoginView):
+    form_class = LoginUserForm
+    template_name = 'lc/login.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Регистрация')
+
+        return context | c_def
+
+    def get_success_url(self):
+        return reverse_lazy('home')
 
 
 def mainpage (request):
