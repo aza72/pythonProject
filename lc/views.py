@@ -1,3 +1,4 @@
+
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
@@ -143,6 +144,18 @@ class lcCategory(DataMixin, ListView):
 #     return render(request,'lc/index.html',context=showcat_param)
 
 
+
+
+class RegisterUser(DataMixin,CreateView):
+
+    form_class = RegisterUserForm
+    template_name = 'lc/register.html'
+    success_url = reverse_lazy('login')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Регистрация')
+        return context | c_def
 
 def mainpage (request):
     return HttpResponse('<H1>Глав </h1> ')

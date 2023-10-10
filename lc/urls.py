@@ -1,5 +1,10 @@
 from django.urls import path, re_path
 from .views import *
+
+
+
+
+
 urlpatterns = [
     #path('admin/', admin.site.urls),
     #path('lc/', include('lc.urls')),
@@ -9,6 +14,7 @@ urlpatterns = [
     path('add_page/', add_page.as_view(), name='add_page'),
     path('contact/', contact, name='contact'),
     path('login/', login, name='login'),
+    path('register/', RegisterUser.as_view(), name='register'),
     path('showpost/<slug:postslug>/', showpost.as_view(), name='showpost'),
     path('showcat/<slug:catslug>/', lcCategory.as_view(), name='showcat')
 
