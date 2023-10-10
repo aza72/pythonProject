@@ -26,7 +26,7 @@ class lcHome(DataMixin, ListView):
         return context | c_def
 
     def get_queryset(self):
-        return users.objects.filter(is_published=True)
+        return users.objects.filter(is_published=True).select_related('cat')
 
 
 # def index (request):
@@ -127,7 +127,7 @@ class lcCategory(DataMixin, ListView):
         return context | c_def
 
     def get_queryset(self):
-        return users.objects.filter(cat__slug=self.kwargs['catslug'], is_published=True)
+        return users.objects.filter(cat__slug=self.kwargs['catslug'], is_published=True).select_related('cat')
 
 # def showcat (request, catslug):
 #
