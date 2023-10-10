@@ -1,4 +1,4 @@
-
+from django.contrib.auth import logout, login
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
@@ -160,7 +160,10 @@ class RegisterUser(DataMixin,CreateView):
 
         return context | c_def
 
-
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('home')
 
 
 class LoginUser(DataMixin,LoginView):
@@ -175,6 +178,10 @@ class LoginUser(DataMixin,LoginView):
 
     def get_success_url(self):
         return reverse_lazy('home')
+
+def logout_user (request):
+    logout(request)
+    return redirect('login')
 
 
 def mainpage (request):
