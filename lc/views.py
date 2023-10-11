@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *
 from .models import *
@@ -75,11 +75,27 @@ class add_page(LoginRequiredMixin, DataMixin, CreateView):
 #                      'form':form
 #                     }
 #     return render(request, 'lc/addpage.html', context=addpage_param )
-def contact (request):
-    contact_param = {'menu': menu,
-                     'title': 'Контакты'
-                    }
-    return render(request, 'lc/contact.html', context=contact_param )
+# def contact (request):
+#     contact_param = {'menu': menu,
+#                      'title': 'Контакты'
+#                     }
+#     return render(request, 'lc/contact.html', context=contact_param )
+
+class ContactFormView(DataMixin,FormView):
+    form_class = ContactForm
+    template_name = 'lc/contact.html'
+    success_url = 'home'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Обратная связь')
+
+        return context | c_def
+
+    def form_valid(self,form):
+        print(form.cleaned_data)
+        return redirect('home')
+
 def success (request):
     login_param = {'menu': menu,
                    'title': 'Регистрация'
