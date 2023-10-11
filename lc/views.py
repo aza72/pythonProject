@@ -122,8 +122,9 @@ class lcCategory(DataMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Категория - '+ str(context['posts'][0].cat),
-                                      cat_selected=context['posts'][0].cat_id)
+        c = Category.objects.get(slug=self.kwargs['catslug'])
+        c_def = self.get_user_context(title='Категория - '+ str(c.name),
+                                      cat_selected=c.pk)
         return context | c_def
 
     def get_queryset(self):
